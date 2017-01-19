@@ -3,82 +3,75 @@
  * attendance record if one is not found
  * within localStorage.
  */
-(function() {
-    if (!localStorage.attendance) {
-        console.log('Creating attendance records...');
-        function getRandom() {
-            return (Math.random() >= 0.5);
+
+var model = {
+  schoolDay: 12,
+  students: [
+    {name: 'Slappy the Frog', missedDay: 5},
+    {name: 'Lilly the Lizard', missedDay: 3},
+    {name: 'Paulrus the Walrus', missedDay: 6},
+    {name: 'Gregory the Goat', missedDay: 6},
+    {name: 'Adam the Anaconda', missedDay: 8}
+  ]
+}
+
+var octupos = {
+  init: function(){
+    dayMissedView.init();
+    dayMissedView.render()
+  },
+
+  getStudents: function(){
+    return model.students
+  },
+};
+
+
+//show days missed
+var dayMissedView = {
+  init: function(){
+    var students = octupos.getStudents();
+    var elem = $('td.missed-col')
+    var i
+    for(i = 0; i < students.length; i++){
+      var missedDay = students[i].missedDay
+      // constructs a new jQuery object from one element within index
+      elem.eq(i).html(missedDay)
+    };
+
+    var studentsAttendence = $('tr.student')
+    var a = $('#' + studentsAttendence[0].id + ' input')
+    console.log(a);
+  },
+
+  render: function(){
+    var students = octupos.getStudents();
+    var studentsAttendence = $('tr.student')
+    for(i = 0; i < studentsAttendence.length; i++){
+      var student = students[i];
+      $('#' + studentsAttendence[i].id + ' input').change((function(){
+        console.log(student);
+        return function(student){
+          if(this.checked){
+            console.log(student);
+            student.missedDay -= 1
+          }
         }
+      })(student))
+    };
+  }
+};
 
-        var nameColumns = $('tbody .name-col'),
-            attendance = {};
+//show days attended
+var checkboxVeiw = {
+  init: function(){
+    //get students row elements
+    var elem = $('.student');
+  },
 
-        nameColumns.each(function() {
-            var name = this.innerText;
-            attendance[name] = [];
+  render: function(){
 
-            for (var i = 0; i <= 11; i++) {
-                attendance[name].push(getRandom());
-            }
-        });
+  }
+}
 
-        localStorage.attendance = JSON.stringify(attendance);
-    }
-}());
-
-
-/* STUDENT APPLICATION */
-$(function() {
-    var attendance = JSON.parse(localStorage.attendance),
-        $allMissed = $('tbody .missed-col'),
-        $allCheckboxes = $('tbody input');
-
-    // Count a student's missed days
-    function countMissing() {
-        $allMissed.each(function() {
-            var studentRow = $(this).parent('tr'),
-                dayChecks = $(studentRow).children('td').children('input'),
-                numMissed = 0;
-
-            dayChecks.each(function() {
-                if (!$(this).prop('checked')) {
-                    numMissed++;
-                }
-            });
-
-            $(this).text(numMissed);
-        });
-    }
-
-    // Check boxes, based on attendace records
-    $.each(attendance, function(name, days) {
-        var studentRow = $('tbody .name-col:contains("' + name + '")').parent('tr'),
-            dayChecks = $(studentRow).children('.attend-col').children('input');
-
-        dayChecks.each(function(i) {
-            $(this).prop('checked', days[i]);
-        });
-    });
-
-    // When a checkbox is clicked, update localStorage
-    $allCheckboxes.on('click', function() {
-        var studentRows = $('tbody .student'),
-            newAttendance = {};
-
-        studentRows.each(function() {
-            var name = $(this).children('.name-col').text(),
-                $allCheckboxes = $(this).children('td').children('input');
-
-            newAttendance[name] = [];
-
-            $allCheckboxes.each(function() {
-                newAttendance[name].push($(this).prop('checked'));
-            });
-        });
-
-        countMissing();
-        localStorage.attendance = JSON.stringify(newAttendance);
-    });
-
-    countMissing();
-}());
+octupos.init()
